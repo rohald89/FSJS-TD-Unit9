@@ -13,9 +13,48 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   User.init({
-    firstName: DataTypes.STRING,
-    lastName: DataTypes.STRING,
-    emailAddress: DataTypes.STRING,
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'A first name is required'
+        },
+        notEmpty: {
+          msg: 'Please provide a first name'
+        }
+      }
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'A last name is required'
+        },
+        notEmpty: {
+          msg: 'Please provide a last name'
+        }
+      }
+    },
+    emailAddress: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: {
+        msg: 'The email address you entered already exists'
+      },
+      validate: {
+        isEmail: {
+          msg: "Please enter a valid email"
+        },
+        notNull: {
+          msg: 'An email address is required'
+        },
+        notEmpty: {
+          msg: 'Please provide an email address'
+        }
+      }
+    },
     password: DataTypes.STRING
   }, {
     sequelize,
@@ -24,9 +63,9 @@ module.exports = (sequelize, DataTypes) => {
 
   User.associate = (models) => {
     User.hasMany(models.Course, {
-      as: 'User',
+      as: "course",
       foreignKey: {
-        fieldName: "userid",
+        fieldName: "userId",
         allowNull: false,
       }
     });
