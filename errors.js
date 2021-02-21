@@ -1,3 +1,4 @@
+// 404 error handler
 const notFound = ((req, res, next) => {
     const error = new Error;
     error.message = 'This page can not be found';
@@ -5,9 +6,8 @@ const notFound = ((req, res, next) => {
     next(error);
 });
   
-  // Global error handler
+// Global error handler
 const globalError = ((err, req, res, next) => {
-
     res.status(err.status || 500).json({ err });
 });
 
