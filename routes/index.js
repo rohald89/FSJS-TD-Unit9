@@ -38,18 +38,25 @@ router.get('/courses', asyncHandler(async (req, res) => {
 }));
 
 // A /api/courses/:id GET route that will return the corresponding course along with the User that owns that course and a 200 HTTP status code.
-router.get('/courses/:id', asyncHandler(async (req, res) => {
-  console.log(req.params.id);
-  const courses = await Course.findByPk(req.params.id, {
+router.get('/courses/:id', asyncHandler(async (req, res, next) => {
+  const course = await Course.findByPk(req.params.id, {
     attributes: ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded'],
     include: [
       {
         model: User,
-        as:'user'
+        as:'user',
+        attributes: ['id', 'firstName', 'lastName', 'emailAddress']
       }
     ]
   });
-  res.json({courses});
+  if(!course){
+    const error = new Error;
+    error.status = 404;
+    error.message = 'Course not found';
+    next(error);
+  } else {
+  res.json({ course });
+  }
 }));
 
 // A /api/courses POST route that will create a new course, set the Location header to the URI for the newly created course, and return a 201 HTTP status code and no content.
@@ -58,21 +65,22 @@ router.post('/courses', authenticateUser, asyncHandler(async (req, res) => {
     res.location(`/courses/${course.id}`).status(201).end();
 }));
 
-
 // A /api/courses/:id PUT route that will update the corresponding course and return a 204 HTTP status code and no content.
 router.put('/courses/:id', authenticateUser, asyncHandler( async (req, res, next) => {
   const course = await Course.findByPk(req.params.id);
   if(!course){
-      const error = new Error('can not find this course please try again');
+      const error = new Error();
       error.status = 404;
+      error.message = 'Not able to find this course, please try again';
       next(error);
   } else{
     if(req.currentUser.id === course.userId) {
       await course.update(req.body);
       res.status(204).end();
     } else {
-      const error = new Error('Only the owner the the course can make changes');
+      const error = new Error();
       error.status = 403;
+      error.message = 'Only the owner of this course can make changes';
       next(error);
     }
   }
@@ -82,16 +90,18 @@ router.put('/courses/:id', authenticateUser, asyncHandler( async (req, res, next
 router.delete('/courses/:id', authenticateUser, asyncHandler( async (req, res, next) => {
   const course = await Course.findByPk(req.params.id);
   if(!course){
-    const error = new Error('Can not find this course');
+    const error = new Error();
     error.status = 404;
+    error.message = 'This course can not be found';
     next(error);
   } else {
     if(req.currentUser.id === course.userId){
       await course.destroy();
       res.status(204).end();
     } else {
-      const error = new Error('You are only allowed to delete courses of which you are the owner');
+      const error = new Error();
       error.status = 403;
+      error.message = 'You are only allowed to delete courses of which you are the owner';
       next(error);
     }
   }

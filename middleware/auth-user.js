@@ -28,12 +28,15 @@ exports.authenticateUser = async (req, res, next) => {
       message = `User not found for account: ${credentials.name}`;
     }
   } else {
-      message = 'Auth header not found';
+      message = 'You have to login in to perform this action';
   }
   
   if (message) {
     console.warn(message);
-    res.status(401).json({ message: 'Access Denied' });
+    const error = new Error();
+    error.status = 401;
+    error.message = message;
+    next(error);
   } else {
     next();
   }
