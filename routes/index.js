@@ -62,7 +62,11 @@ router.post('/courses', authenticateUser, asyncHandler(async (req, res) => {
 // A /api/courses/:id PUT route that will update the corresponding course and return a 204 HTTP status code and no content.
 router.put('/courses/:id', authenticateUser, asyncHandler( async (req, res, next) => {
   const course = await Course.findByPk(req.params.id);
-  if(course){
+  if(!course){
+      const error = new Error('can not find this course please try again');
+      error.status = 404;
+      next(error);
+  } else{
     if(req.currentUser.id === course.userId) {
       await course.update(req.body);
       res.status(204).end();
@@ -71,17 +75,26 @@ router.put('/courses/:id', authenticateUser, asyncHandler( async (req, res, next
       error.status = 403;
       next(error);
     }
-  } else {
-    const error = new Error('can not find this course please try again');
-    error.status = 404;
-    next(error);
   }
-  
 }));
 
 // A /api/courses/:id DELETE route that will delete the corresponding course and return a 204 HTTP status code and no content.
-router.delete('/courses/:id', authenticateUser, asyncHandler( async (req, res) => {
-
+router.delete('/courses/:id', authenticateUser, asyncHandler( async (req, res, next) => {
+  const course = await Course.findByPk(req.params.id);
+  if(!course){
+    const error = new Error('Can not find this course');
+    error.status = 404;
+    next(error);
+  } else {
+    if(req.currentUser.id === course.userId){
+      await course.destroy();
+      res.status(204).end();
+    } else {
+      const error = new Error('You are only allowed to delete courses of which you are the owner');
+      error.status = 403;
+      next(error);
+    }
+  }
 }));
 
 module.exports = router;
