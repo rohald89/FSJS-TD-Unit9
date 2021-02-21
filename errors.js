@@ -8,7 +8,7 @@ const notFound = ((req, res, next) => {
   
 // Global error handler
 const globalError = ((err, req, res, next) => {
-    res.status(err.status || 500).json({ err });
+    res.status(err.status || 500).json({ error: err });
 });
 
 module.exports = { notFound, globalError };
