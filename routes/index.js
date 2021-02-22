@@ -19,7 +19,7 @@ router.get('/users', authenticateUser, asyncHandler( async (req, res) => {
 // Create a new user, set the Location header to "/", and return a 201 HTTP status code without content.
 router.post('/users', asyncHandler(async (req, res) => {
       await User.create(req.body);
-      res.location('/').status(201).json({ "message": "Account successfully created!" });
+      res.location('/').status(201).end();
   }));
 
 
@@ -30,7 +30,8 @@ router.get('/courses', asyncHandler(async (req, res) => {
      include: [
        {
          model: User,
-         as:'user'
+         as:'user',
+         attributes: ['id', 'firstName', 'lastName', 'emailAddress']
        }
      ]
    });
